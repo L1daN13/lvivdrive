@@ -233,7 +233,7 @@ export function HomePage() {
           </aside>
         )}
 
-        <main className={`relative min-w-0 flex-1 ${isDesktop ? '' : 'has-sheet'}`}>
+        <main className={`relative min-w-0 flex-1 ${isDesktop ? '' : sheetExpanded ? 'has-sheet sheet-open' : 'has-sheet'}`}>
           <MapView
             locations={mapLocations}
             selectedId={selectedId}

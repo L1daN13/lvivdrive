@@ -36,6 +36,11 @@ body {
   bottom: 76px;
 }
 
+/* Розгорнута панель закриває низ карти — атрибуцію там не показуємо, щоб не налазила */
+.sheet-open .leaflet-bottom {
+  display: none;
+}
+
 .dark .leaflet-control-attribution {
   @apply bg-slate-800/80 text-slate-300;
 }
