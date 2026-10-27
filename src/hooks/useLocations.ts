@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { BBox, MapLocation } from '../types/location';
 import { DataSourceError } from '../services/dataSource';
 import { locationProvider } from '../services/overpassApi';
+import { fetchSnapshot } from '../services/snapshot';
 import { bboxContains } from '../utils/geo';
 
 const AUTO_RETRIES = 3;
@@ -84,9 +85,26 @@ export function useLocations(initialBBox: BBox): LocationsState {
     [loadedAreas],
   );
 
+  // Спершу — знімок даних зі свого домену (швидко й надійно);
+  // якщо його немає, звертаємось до Overpass.
   useEffect(() => {
-    void load(initialBBox);
+    const ctrl = new AbortController();
+    abortRef.current = ctrl;
+    setStatus('loading');
+    void fetchSnapshot(ctrl.signal).then((snap) => {
+      if (ctrl.signal.aborted) return;
+      if (!snap) {
+        void load(initialBBox);
+        return;
+      }
+      setById(new Map(snap.items.map((l) => [l.id, l])));
+      setLoadedAreas([snap.bbox]);
+      setLastUpdated(snap.dataDate);
+      setStale(false);
+      setStatus('ready');
+    });
     return () => {
+      ctrl.abort();
       abortRef.current?.abort();
       clearTimeout(retryTimer.current);
     };

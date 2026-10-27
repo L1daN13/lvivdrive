@@ -39,7 +39,8 @@ API-ключі не потрібні — усі використані серв�
 | Що | Джерело | Примітки |
 |---|---|---|
 | Картографічна основа | [OpenStreetMap](https://www.openstreetmap.org/copyright) тайли | © учасники OpenStreetMap, ODbL |
-| Парковки, зарядки | [Overpass API](https://wiki.openstreetmap.org/wiki/Overpass_API) | Теги `amenity=parking`, `amenity=parking_space`, `amenity=charging_station` |
+| Парковки, зарядки (Львів) | Щоденний знімок з [вивантажки Geofabrik](https://download.geofabrik.de/europe/ukraine.html) | Готується в GitHub Actions, віддається з самого сайту |
+| Парковки, зарядки (інші області, резерв) | [Overpass API](https://wiki.openstreetmap.org/wiki/Overpass_API) | Теги `amenity=parking`, `amenity=parking_space`, `amenity=charging_station` |
 | Приблизна адреса, пошук вулиць | [Nominatim](https://nominatim.org/) | Лише за дією користувача, ≤ 1 запит/с |
 | Маршрути | Google Maps / OSM (fossgis OSRM) | Відкриваються у зовнішньому сервісі |
 
@@ -57,6 +58,18 @@ API-ключі не потрібні — усі використані серв�
 
 - **Парковки:** `name`, `addr:*`, `parking` (surface, underground, multi-storey, street_side, lane…), `fee`, `charge`, `capacity`, `capacity:disabled`, `opening_hours`, `access`, `wheelchair`, `maxstay`, `operator`, `website`.
 - **Зарядки:** `name`, `operator`, `brand`, `network`, `socket:*` (type2, type2_combo → CCS2, chademo, type1, type1_combo → CCS1, tesla_*, gb_t, schuko…), `socket:*:output`, `charging_station:output`, `maxpower`, `capacity`, `fee`, `charge`, `opening_hours`, `access`.
+
+### Знімок даних для Львова
+
+Публічні сервери Overpass часто перевантажені, тому під час кожного деплою та щодня о 03:30 UTC
+workflow [deploy.yml](.github/workflows/deploy.yml):
+
+1. завантажує `ukraine-latest.osm.pbf` з Geofabrik;
+2. вирізає область Львова (`osmium extract`) і потрібні теги (`osmium tags-filter`);
+3. перетворює дані на `public/data/lviv-osm.json` скриптом [scripts/build-snapshot.mjs](scripts/build-snapshot.mjs).
+
+Сайт спершу читає цей файл (дата даних показується в панелі), а Overpass використовує лише для
+пошуку за межами Львова або якщо знімка немає (наприклад, під час локальної розробки).
 
 ### Публічні сервери Overpass і навантаження
 

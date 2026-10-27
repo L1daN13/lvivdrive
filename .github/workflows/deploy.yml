@@ -3,6 +3,9 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+  # Щоденне оновлення знімка даних OpenStreetMap
+  schedule:
+    - cron: '30 3 * * *'
   workflow_dispatch:
 
 permissions:
@@ -14,6 +17,10 @@ concurrency:
   group: pages
   cancel-in-progress: true
 
+env:
+  # Львів і околиці: west,south,east,north
+  LVIV_BBOX: 23.89,49.76,24.15,49.91
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -24,6 +31,20 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+
+      # Знімок парковок і зарядок з офіційної вивантажки OSM (не залежить від Overpass).
+      # Якщо крок не вдасться, сайт однаково опублікується і вантажитиме дані з Overpass.
+      - name: Build OSM snapshot for Lviv
+        continue-on-error: true
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq osmium-tool
+          curl -sSfL --retry 3 -o ukraine.osm.pbf https://download.geofabrik.de/europe/ukraine-latest.osm.pbf
+          SOURCE_DATE=$(osmium fileinfo -g header.option.osmosis_replication_timestamp ukraine.osm.pbf || true)
+          osmium extract -b "$LVIV_BBOX" ukraine.osm.pbf -o lviv.osm.pbf
+          osmium tags-filter lviv.osm.pbf nwr/amenity=parking,parking_space,charging_station -o filtered.osm.pbf
+          osmium export filtered.osm.pbf -f geojsonseq --add-unique-id=type_id -o lviv.geojsonseq
+          node scripts/build-snapshot.mjs lviv.geojsonseq public/data/lviv-osm.json "$SOURCE_DATE"
+
       - run: npm run build
       - uses: actions/upload-pages-artifact@v3
         with:

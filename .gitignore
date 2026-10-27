@@ -3,4 +3,6 @@ dist
 *.local
 *.tsbuildinfo
 .claude/
+# Генерується в CI зі знімка OpenStreetMap
+public/data/
 .DS_Store

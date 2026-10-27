@@ -50,7 +50,7 @@ export function StatusBanner({ status, error, onRetry, lastUpdated, stale }: Pro
     );
   }
   if (status === 'ready' && lastUpdated) {
-    return <p className="text-xs text-slate-400 dark:text-slate-500">Дані OpenStreetMap отримано {formatWhen(lastUpdated)}</p>;
+    return <p className="text-xs text-slate-400 dark:text-slate-500">Дані OpenStreetMap станом на {formatWhen(lastUpdated)}</p>;
   }
   return null;
 }
