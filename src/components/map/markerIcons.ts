@@ -1,5 +1,6 @@
 import L from 'leaflet';
 import type { MapLocation } from '../../types/location';
+import { AVAILABILITY_COLORS, availabilityLevel } from '../../utils/availability';
 
 export type MarkerVariant = 'parking' | 'parking-paid' | 'parking-free' | 'parking-live' | 'charging' | 'charging-fast';
 
@@ -36,11 +37,13 @@ export function getMarkerIcon(variant: MarkerVariant, selected: boolean, favorit
   if (hit) return hit;
 
   const size = selected ? 44 : 32;
-  const color = COLORS[variant];
+  // Парковки з відомою кількістю вільних місць «світяться» кольором доступності
+  const level = freeCount !== null ? availabilityLevel(freeCount) : null;
+  const color = level ? AVAILABILITY_COLORS[level] : COLORS[variant];
   const glyph = variant.startsWith('charging') ? ZAP : P;
   const badge =
     freeCount !== null
-      ? `<span class="ld-badge" style="background:${freeCount > 0 ? '#16a34a' : '#dc2626'}">${freeCount}</span>`
+      ? `<span class="ld-badge" style="background:#0f172a">${freeCount}</span>`
       : variant === 'parking-paid'
       ? '<span class="ld-badge" style="background:#f59e0b">₴</span>'
       : variant === 'parking-free'
@@ -51,7 +54,7 @@ export function getMarkerIcon(variant: MarkerVariant, selected: boolean, favorit
   const star = favorite ? '<span class="ld-fav">★</span>' : '';
 
   const html = `
-    <div class="ld-pin${selected ? ' ld-pin--selected' : ''}" style="--pin:${color};width:${size}px;height:${size}px">
+    <div class="ld-pin${selected ? ' ld-pin--selected' : ''}${level ? (level === 'none' ? ' ld-pin--dim' : ' ld-pin--glow') : ''}" style="--pin:${color};width:${size}px;height:${size}px">
       <svg viewBox="0 0 24 24" width="${Math.round(size * 0.55)}" height="${Math.round(size * 0.55)}" style="color:#fff">${glyph}</svg>
       ${badge}${star}
     </div>`;

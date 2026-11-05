@@ -1,5 +1,6 @@
 import { Car, CircleCheck } from 'lucide-react';
 import type { ManagedLot, SpaceState } from '../types/location';
+import { AVAILABILITY_TEXT, availabilityLevel } from '../utils/availability';
 
 interface Props {
   lot: ManagedLot;
@@ -27,7 +28,7 @@ export function SpaceGrid({ lot, states, onToggle }: Props) {
       <div className="flex items-baseline justify-between gap-2">
         <h3 className="font-semibold text-slate-900 dark:text-white">Паркомісця</h3>
         <p className="text-sm">
-          <span className={`font-bold ${free > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>Вільно {free}</span>
+          <span className={`font-bold ${AVAILABILITY_TEXT[availabilityLevel(free)]}`}>Вільно {free}</span>
           <span className="text-slate-500 dark:text-slate-400"> з {total}</span>
         </p>
       </div>

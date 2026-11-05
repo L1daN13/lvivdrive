@@ -61,9 +61,14 @@ export function HomePage() {
     return out;
   }, [allLocations, freeCount]);
 
+  // Статуси місць потрібні фільтру лише коли він увімкнений — інакше зміна статусу
+  // не перебудовує весь набір маркерів
+  const availabilityFilter = filters.onlyAvailable ? liveFree : null;
+
+
   const filtered = useMemo(
-    () => allLocations.filter((l) => matchesFilters(l, filters, userPos) && matchesQuery(l, query)),
-    [allLocations, filters, userPos, query],
+    () => allLocations.filter((l) => matchesFilters(l, filters, userPos, availabilityFilter) && matchesQuery(l, query)),
+    [allLocations, filters, userPos, query, availabilityFilter],
   );
 
   const selected = useMemo<MapLocation | null>(
@@ -239,6 +244,13 @@ export function HomePage() {
         active={navActive}
         onNav={handleNav}
         favoritesCount={favorites.length}
+        onlyAvailable={filters.onlyAvailable}
+        onToggleAvailable={() => {
+          setSelectedId(null);
+          setTab('results');
+          if (!isDesktop) setSheetExpanded(true);
+          setFilters({ ...filters, onlyAvailable: !filters.onlyAvailable });
+        }}
         theme={theme}
         onToggleTheme={toggleTheme}
       />

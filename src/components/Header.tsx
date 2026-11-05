@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Moon, SquareParking, Star, Sun, Zap } from 'lucide-react';
+import { CircleCheck, Moon, SquareParking, Star, Sun, Zap } from 'lucide-react';
 import type { Theme } from '../hooks/useTheme';
 
 export type NavKey = 'parking' | 'charging' | 'favorites';
@@ -9,6 +9,9 @@ interface Props {
   active: NavKey | null;
   onNav: (key: NavKey) => void;
   favoritesCount: number;
+  /** Загальний фільтр «Є вільні місця». */
+  onlyAvailable: boolean;
+  onToggleAvailable: () => void;
   theme: Theme;
   onToggleTheme: () => void;
 }
@@ -30,7 +33,7 @@ const NAV: { key: NavKey; label: string; icon: ReactNode; activeClass: string }[
   { key: 'favorites', label: 'Вибране', icon: <Star className="h-4 w-4" />, activeClass: 'bg-amber-500 text-white ring-amber-500' },
 ];
 
-export function Header({ search, active, onNav, favoritesCount, theme, onToggleTheme }: Props) {
+export function Header({ search, active, onNav, favoritesCount, onlyAvailable, onToggleAvailable, theme, onToggleTheme }: Props) {
   const themeButton = (
     <button
       type="button"
@@ -74,6 +77,20 @@ export function Header({ search, active, onNav, favoritesCount, theme, onToggleT
               </button>
             );
           })}
+          <button
+            type="button"
+            onClick={onToggleAvailable}
+            aria-pressed={onlyAvailable}
+            title="Показувати лише парковки, де є вільні місця"
+            className={`flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium ring-1 transition active:scale-95 ${
+              onlyAvailable
+                ? 'bg-emerald-600 text-white ring-emerald-600 shadow-[0_0_12px_rgba(22,163,74,0.55)]'
+                : 'bg-white text-slate-700 ring-slate-200 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-700 dark:hover:bg-slate-700'
+            }`}
+          >
+            <CircleCheck className="h-4 w-4" />
+            Є вільні місця
+          </button>
         </nav>
         <div className="hidden md:block">{themeButton}</div>
       </div>

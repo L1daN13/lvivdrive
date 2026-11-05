@@ -129,6 +129,8 @@ export interface Filters {
   publicOnly: boolean;
   /** Показувати окремі паркомісця (amenity=parking_space). */
   includeSpaces: boolean;
+  /** Лише парковки, де зараз є вільні місця (за відомими статусами). */
+  onlyAvailable: boolean;
 }
 
 export type SidebarTab = 'results' | 'favorites';

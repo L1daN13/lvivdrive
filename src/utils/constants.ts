@@ -14,6 +14,7 @@ export const DEFAULT_FILTERS: Filters = {
   maxDistanceKm: null,
   publicOnly: true,
   includeSpaces: false,
+  onlyAvailable: false,
 };
 
 export const DISTANCE_OPTIONS = [1, 3, 5, 10] as const;

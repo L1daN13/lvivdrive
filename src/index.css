@@ -84,6 +84,27 @@ body {
   box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.45), 0 4px 12px rgba(15, 23, 42, 0.4);
 }
 
+/* Світіння маркера кольором доступності (зелений / жовтий / червоний) */
+.ld-pin--glow::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  box-shadow: 0 0 10px 4px var(--pin);
+  animation: ld-glow 1.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Немає вільних місць — приглушений сірий маркер без світіння */
+.ld-pin--dim {
+  opacity: 0.85;
+}
+
+@keyframes ld-glow {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 1; }
+}
+
 .ld-badge {
   position: absolute;
   top: -6px;

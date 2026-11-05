@@ -1,7 +1,8 @@
+import { AVAILABILITY_COLORS, AVAILABILITY_LEGEND } from '../utils/availability';
+
 const ITEMS = [
   { color: '#2563eb', label: 'Парковка' },
   { color: '#16a34a', label: 'Зарядка' },
-  { color: '#7c3aed', label: 'Статус місць' },
 ];
 
 export function MapLegend() {
@@ -13,6 +14,15 @@ export function MapLegend() {
           {i.label}
         </span>
       ))}
+      <span className="flex items-center gap-1.5" title="Кількість вільних місць на парковках зі статусом місць">
+        Вільно:
+        {AVAILABILITY_LEGEND.map((a) => (
+          <span key={a.level} className="flex items-center gap-0.5">
+            <span className="h-3 w-3 rounded-full" style={{ background: AVAILABILITY_COLORS[a.level], boxShadow: a.level === 'none' ? undefined : `0 0 5px ${AVAILABILITY_COLORS[a.level]}` }} />
+            {a.label}
+          </span>
+        ))}
+      </span>
       <span className="flex items-center gap-1.5">
         <span className="grid h-3.5 w-3.5 place-items-center rounded-full bg-amber-500 text-[8px] text-white">₴</span>
         Платна

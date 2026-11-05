@@ -141,6 +141,12 @@ export function FilterPanel({ filters: f, onChange, onReset, hasUserPosition, on
       </Group>
 
       <div className="space-y-3 border-t border-slate-100 pt-3 dark:border-slate-700">
+        <div>
+          <Toggle checked={f.onlyAvailable} onChange={(v) => set({ onlyAvailable: v })} label="Лише парковки з вільними місцями" />
+          <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
+            Кількість вільних місць відома лише для парковок зі статусом місць.
+          </p>
+        </div>
         <Toggle checked={f.publicOnly} onChange={(v) => set({ publicOnly: v })} label="Приховати приватні об’єкти" />
         {showParking && (
           <Toggle checked={f.includeSpaces} onChange={(v) => set({ includeSpaces: v })} label="Показувати окремі паркомісця" />

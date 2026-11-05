@@ -26,7 +26,21 @@ export function matchesQuery(l: MapLocation, query: string): boolean {
   return q.split(/\s+/).every((word) => text.includes(word));
 }
 
-export function matchesFilters(l: MapLocation, f: Filters, userPos: LatLon | null): boolean {
+/**
+ * @param freeById кількість вільних місць для парковок, де вона відома;
+ *   потрібна лише для фільтра «Є вільні місця».
+ */
+export function matchesFilters(
+  l: MapLocation,
+  f: Filters,
+  userPos: LatLon | null,
+  freeById: Record<string, number> | null = null,
+): boolean {
+  if (f.onlyAvailable) {
+    // Показуємо лише парковки, де вільне місце точно є; невідомий статус — не підходить
+    if (l.kind !== 'parking') return false;
+    if ((freeById?.[l.id] ?? 0) <= 0) return false;
+  }
   if (f.category !== 'all' && l.kind !== f.category) return false;
   if (f.publicOnly && l.access && PRIVATE_ACCESS.has(l.access)) return false;
   if (f.maxDistanceKm !== null && userPos && distanceKm(userPos, l) > f.maxDistanceKm) return false;
@@ -70,5 +84,6 @@ export function countActiveFilters(f: Filters): number {
   if (f.maxDistanceKm !== null) n++;
   if (!f.publicOnly) n++;
   if (f.includeSpaces) n++;
+  if (f.onlyAvailable) n++;
   return n;
 }

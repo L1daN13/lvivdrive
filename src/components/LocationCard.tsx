@@ -3,6 +3,7 @@ import type { MapLocation } from '../types/location';
 import { formatDistance } from '../utils/geo';
 import { CONNECTOR_LABELS, FEE_LABELS, displayName, formatKw, parkingTypeLabel } from '../utils/labels';
 import { Badge } from './Badge';
+import { AVAILABILITY_TONE, availabilityLevel } from '../utils/availability';
 import { LocationIcon } from './LocationIcon';
 
 interface Props {
@@ -33,7 +34,7 @@ function Summary({ location: l, freeCount }: { location: MapLocation; freeCount:
   return (
     <div className="mt-1.5 flex flex-wrap gap-1">
       {l.managed && freeCount !== null && (
-        <Badge tone={freeCount > 0 ? 'green' : 'red'}>
+        <Badge tone={AVAILABILITY_TONE[availabilityLevel(freeCount)]}>
           Вільно {freeCount} з {l.managed.spaces.length}
         </Badge>
       )}
