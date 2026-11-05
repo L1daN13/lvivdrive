@@ -86,25 +86,14 @@ export interface ParkingLocation extends BaseLocation {
 /** Парковка, де статус кожного місця задається вручну в LvivDrive. */
 export interface ManagedLot {
   spaces: { id: string; label: string }[];
+  /** Місця, зайняті за замовчуванням (поки користувач не змінив статус). */
+  defaultOccupied?: string[];
 }
-
-export type SpaceStatus = 'free' | 'occupied' | 'reserved';
 
 export interface SpaceState {
-  status: SpaceStatus;
+  occupied: boolean;
   /** Коли статус змінено (мс з epoch). */
   at: number;
-  /** Для броні: до якого моменту місце утримується (мс з epoch). */
-  reservedUntil?: number;
-  /** Для броні: ідентифікатор клієнта, який забронював. */
-  reservedBy?: string;
-}
-
-/** Активна бронь поточного користувача. */
-export interface Booking {
-  lotId: string;
-  spaceId: string;
-  until: number;
 }
 
 /** Статуси місць: lotId → spaceId → стан. */

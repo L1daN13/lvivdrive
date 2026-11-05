@@ -11,6 +11,8 @@ interface ManagedLotConfig {
   address: string;
   fallback: { lat: number; lon: number };
   spaceCount: number;
+  /** Номери місць, зайнятих за замовчуванням. */
+  defaultOccupied?: string[];
 }
 
 const CONFIG: ManagedLotConfig[] = [
@@ -20,7 +22,8 @@ const CONFIG: ManagedLotConfig[] = [
     name: 'Парковка ТЦ «Вам»',
     address: 'вул. Івана Виговського, 100',
     fallback: { lat: 49.812094, lon: 23.976934 },
-    spaceCount: 10,
+    spaceCount: 6,
+    defaultOccupied: ['1', '2', '5'],
   },
 ];
 
@@ -77,6 +80,6 @@ function enrich(l: ParkingLocation, c: ManagedLotConfig): ParkingLocation {
     name: l.name ?? c.name,
     address: l.address ?? c.address,
     // capacity не чіпаємо: керовані місця — лише частина парковки, а не її повна місткість
-    managed: { spaces: spaces(c.spaceCount) },
+    managed: { spaces: spaces(c.spaceCount), defaultOccupied: c.defaultOccupied },
   };
 }

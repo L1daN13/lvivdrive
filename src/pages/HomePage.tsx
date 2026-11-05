@@ -20,8 +20,6 @@ import { usePersistentState } from '../hooks/usePersistentState';
 import { useTheme } from '../hooks/useTheme';
 import { useSpaceStatus } from '../hooks/useSpaceStatus';
 import { withManagedLots } from '../data/managedLots';
-import { SpaceGrid } from '../components/SpaceGrid';
-import { BookingChip } from '../components/BookingChip';
 import type { PlaceResult } from '../services/geocoding';
 import { DEFAULT_FILTERS, LVIV_BBOX, LVIV_CENTER, LVIV_ZOOM } from '../utils/constants';
 import { countActiveFilters, matchesFilters, matchesQuery } from '../utils/filters';
@@ -35,8 +33,7 @@ export function HomePage() {
   const { theme, toggleTheme } = useTheme();
   const data = useLocations(LVIV_BBOX);
   const { favorites, isFavorite, toggleFavorite, clearFavorites } = useFavorites();
-  const spaces = useSpaceStatus();
-  const { freeCount } = spaces;
+  const { lotStates, toggleSpace, freeCount } = useSpaceStatus();
   const geo = useGeolocation();
   const isDesktop = useMediaQuery('(min-width: 768px)');
 
@@ -157,16 +154,6 @@ export function HomePage() {
   const onMapClick = useCallback(() => setSelectedId(null), []);
   const closeToast = useCallback(() => setToast(null), []);
 
-  // Повідомлення, коли час нашої броні сплив
-  const { expired: expiredBooking, clearExpired } = spaces;
-  useEffect(() => {
-    if (!expiredBooking) return;
-    setToast(`Час броні місця ${expiredBooking.spaceId} вийшов — місце знову вільне.`);
-    clearExpired();
-  }, [expiredBooking, clearExpired]);
-
-  const bookingLot = spaces.myBooking ? allLocations.find((l) => l.id === spaces.myBooking!.lotId) : undefined;
-
   const needsAreaSearch = view !== null && !data.isAreaLoaded(view.bbox) && tab === 'results';
   const searchAreaDisabledReason = view && view.zoom < MIN_SEARCH_ZOOM ? 'Наблизьте карту, щоб шукати тут' : null;
 
@@ -189,23 +176,10 @@ export function HomePage() {
       onBack={() => setSelectedId(null)}
       onShowOnMap={() => showOnMap(selected)}
       onToggleFavorite={() => toggleFavorite(selected)}
-      spaceSlot={
-        selected.kind === 'parking' && selected.managed ? (
-          <SpaceGrid
-            lotId={selected.id}
-            lot={selected.managed}
-            states={spaces.lotStates(selected.id, selected.managed)}
-            now={spaces.now}
-            clientId={spaces.clientId}
-            myBooking={spaces.myBooking}
-            onSetOccupied={(id, occ) => spaces.setOccupied(selected.id, id, occ)}
-            onReserve={(id, min) => spaces.reserve(selected.id, id, min)}
-            onExtend={(id, min) => spaces.extend(selected.id, id, min)}
-            onCancel={(id) => spaces.cancel(selected.id, id)}
-            onArrive={(id) => spaces.arrive(selected.id, id)}
-          />
-        ) : undefined
-      }
+      spaceStates={selected.kind === 'parking' && selected.managed ? lotStates(selected.id, selected.managed) : undefined}
+      onToggleSpace={(spaceId) => {
+        if (selected.kind === 'parking' && selected.managed) toggleSpace(selected.id, selected.managed, spaceId);
+      }}
     />
   ) : (
     <Sidebar
@@ -301,19 +275,6 @@ export function HomePage() {
             onSearchArea={() => view && void data.load(view.bbox)}
           />
           <MapLegend />
-          {spaces.myBooking && bookingLot && !(selected?.id === bookingLot.id && (isDesktop || sheetExpanded)) && (
-            <BookingChip
-              booking={spaces.myBooking}
-              lotName={displayName(bookingLot).text}
-              now={spaces.now}
-              onOpen={() => {
-                setTab('results');
-                setSelectedId(bookingLot.id);
-                setFocusNonce((n) => n + 1);
-                setSheetExpanded(true);
-              }}
-            />
-          )}
           {!isDesktop && (
             <BottomSheet expanded={sheetExpanded} onToggle={() => setSheetExpanded((e) => !e)} summary={sheetSummary}>
               {panelContent}
