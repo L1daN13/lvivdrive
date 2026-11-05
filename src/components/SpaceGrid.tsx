@@ -19,9 +19,8 @@ export function SpaceGrid({ lot, states, onToggle }: Props) {
   const free = lot.spaces.filter((s) => !states?.[s.id]?.occupied).length;
   const total = lot.spaces.length;
   const lastChange = Math.max(0, ...lot.spaces.map((s) => states?.[s.id]?.at ?? 0));
-  // Два ряди місць, як на справжньому майданчику
-  const half = Math.ceil(total / 2);
-  const rows = [lot.spaces.slice(0, half), lot.spaces.slice(half)];
+  // Усі місця в один ряд, як на справжньому майданчику
+  const rows = [lot.spaces];
 
   return (
     <section className="mt-4 rounded-2xl border border-slate-200 p-3 dark:border-slate-700" aria-label="Паркомісця">
@@ -35,7 +34,7 @@ export function SpaceGrid({ lot, states, onToggle }: Props) {
 
       <div className="mt-3 space-y-2">
         {rows.map((row, i) => (
-          <div key={i} className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${half}, minmax(0, 1fr))` }}>
+          <div key={i} className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${total}, minmax(0, 1fr))` }}>
             {row.map((s) => {
               const st = states?.[s.id];
               const occupied = st?.occupied ?? false;
