@@ -18,6 +18,8 @@ import { useLocations } from '../hooks/useLocations';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import { usePersistentState } from '../hooks/usePersistentState';
 import { useTheme } from '../hooks/useTheme';
+import { useSpaceStatus } from '../hooks/useSpaceStatus';
+import { withManagedLots } from '../data/managedLots';
 import type { PlaceResult } from '../services/geocoding';
 import { DEFAULT_FILTERS, LVIV_BBOX, LVIV_CENTER, LVIV_ZOOM } from '../utils/constants';
 import { countActiveFilters, matchesFilters, matchesQuery } from '../utils/filters';
@@ -31,6 +33,7 @@ export function HomePage() {
   const { theme, toggleTheme } = useTheme();
   const data = useLocations(LVIV_BBOX);
   const { favorites, isFavorite, toggleFavorite, clearFavorites } = useFavorites();
+  const { statuses: spaceStatuses, toggleSpace, freeCount } = useSpaceStatus();
   const geo = useGeolocation();
   const isDesktop = useMediaQuery('(min-width: 768px)');
 
@@ -49,14 +52,23 @@ export function HomePage() {
   const userPos: LatLon | null = geo.position;
 
   // --- Похідні дані ---
+  // Дані джерела + паркомісця з ручним керуванням
+  const allLocations = useMemo(() => withManagedLots(data.locations), [data.locations]);
+
+  const liveFree = useMemo(() => {
+    const out: Record<string, number> = {};
+    for (const l of allLocations) if (l.kind === 'parking' && l.managed) out[l.id] = freeCount(l.id, l.managed);
+    return out;
+  }, [allLocations, freeCount]);
+
   const filtered = useMemo(
-    () => data.locations.filter((l) => matchesFilters(l, filters, userPos) && matchesQuery(l, query)),
-    [data.locations, filters, userPos, query],
+    () => allLocations.filter((l) => matchesFilters(l, filters, userPos) && matchesQuery(l, query)),
+    [allLocations, filters, userPos, query],
   );
 
   const selected = useMemo<MapLocation | null>(
-    () => (selectedId ? data.locations.find((l) => l.id === selectedId) ?? favorites.find((f) => f.id === selectedId) ?? null : null),
-    [selectedId, data.locations, favorites],
+    () => (selectedId ? allLocations.find((l) => l.id === selectedId) ?? favorites.find((f) => f.id === selectedId) ?? null : null),
+    [selectedId, allLocations, favorites],
   );
 
   // На вкладці «Вибране» карта показує лише вибрані об'єкти
@@ -164,6 +176,8 @@ export function HomePage() {
       onBack={() => setSelectedId(null)}
       onShowOnMap={() => showOnMap(selected)}
       onToggleFavorite={() => toggleFavorite(selected)}
+      spaceStates={spaceStatuses[selected.id]}
+      onToggleSpace={(spaceId) => toggleSpace(selected.id, spaceId)}
     />
   ) : (
     <Sidebar
@@ -175,6 +189,7 @@ export function HomePage() {
       selectedId={selectedId}
       userPosition={userPos}
       isFavorite={isFavorite}
+      liveFree={liveFree}
       onOpen={openFromList}
       onShowOnMap={showOnMap}
       onToggleFavorite={toggleFavorite}
@@ -240,6 +255,7 @@ export function HomePage() {
             focusNonce={focusNonce}
             userPosition={geo.position}
             isFavorite={isFavorite}
+            liveFree={liveFree}
             onSelect={selectFromMap}
             onBoundsChange={onBoundsChange}
             onMapReady={setMap}

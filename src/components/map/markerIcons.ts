@@ -1,12 +1,13 @@
 import L from 'leaflet';
 import type { MapLocation } from '../../types/location';
 
-export type MarkerVariant = 'parking' | 'parking-paid' | 'parking-free' | 'charging' | 'charging-fast';
+export type MarkerVariant = 'parking' | 'parking-paid' | 'parking-free' | 'parking-live' | 'charging' | 'charging-fast';
 
 const COLORS: Record<MarkerVariant, string> = {
   parking: '#2563eb',
   'parking-paid': '#1d4ed8',
   'parking-free': '#0891b2',
+  'parking-live': '#7c3aed',
   charging: '#16a34a',
   'charging-fast': '#15803d',
 };
@@ -17,6 +18,7 @@ const P = '<path d="M9 17V7h4a3 3 0 0 1 0 6H9" fill="none" stroke="currentColor"
 
 export function markerVariant(l: MapLocation): MarkerVariant {
   if (l.kind === 'charging') return l.maxPowerKw !== null && l.maxPowerKw > 50 ? 'charging-fast' : 'charging';
+  if (l.managed) return 'parking-live';
   if (l.fee === 'paid' || l.fee === 'conditional') return 'parking-paid';
   if (l.fee === 'free') return 'parking-free';
   return 'parking';
@@ -24,9 +26,12 @@ export function markerVariant(l: MapLocation): MarkerVariant {
 
 const cache = new Map<string, L.DivIcon>();
 
-/** Маркер-«крапля» з іконкою; виділений — більший і з обводкою. */
-export function getMarkerIcon(variant: MarkerVariant, selected: boolean, favorite: boolean): L.DivIcon {
-  const key = `${variant}|${selected}|${favorite}`;
+/**
+ * Маркер-«крапля» з іконкою; виділений — більший і з обводкою.
+ * `freeCount` — кількість вільних місць для парковок з ручним керуванням.
+ */
+export function getMarkerIcon(variant: MarkerVariant, selected: boolean, favorite: boolean, freeCount: number | null = null): L.DivIcon {
+  const key = `${variant}|${selected}|${favorite}|${freeCount}`;
   const hit = cache.get(key);
   if (hit) return hit;
 
@@ -34,7 +39,9 @@ export function getMarkerIcon(variant: MarkerVariant, selected: boolean, favorit
   const color = COLORS[variant];
   const glyph = variant.startsWith('charging') ? ZAP : P;
   const badge =
-    variant === 'parking-paid'
+    freeCount !== null
+      ? `<span class="ld-badge" style="background:${freeCount > 0 ? '#16a34a' : '#dc2626'}">${freeCount}</span>`
+      : variant === 'parking-paid'
       ? '<span class="ld-badge" style="background:#f59e0b">₴</span>'
       : variant === 'parking-free'
         ? '<span class="ld-badge" style="background:#10b981">0</span>'

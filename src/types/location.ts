@@ -79,7 +79,23 @@ export interface ParkingLocation extends BaseLocation {
   maxStay: string | null;
   supervised: TriState;
   covered: TriState;
+  /** Паркомісця з ручним керуванням статусом (лише для окремих парковок). */
+  managed?: ManagedLot;
 }
+
+/** Парковка, де статус кожного місця задається вручну в LvivDrive. */
+export interface ManagedLot {
+  spaces: { id: string; label: string }[];
+}
+
+export interface SpaceState {
+  occupied: boolean;
+  /** Коли статус змінено (мс з epoch). */
+  at: number;
+}
+
+/** Статуси місць: lotId → spaceId → стан. */
+export type SpaceStatuses = Record<string, Record<string, SpaceState>>;
 
 export interface ChargingLocation extends BaseLocation {
   kind: 'charging';

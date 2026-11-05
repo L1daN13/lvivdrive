@@ -9,13 +9,15 @@ interface Props {
   location: MapLocation;
   distanceKm: number | null;
   favorite: boolean;
+  /** Вільні місця, якщо статус паркомісць задається вручну. */
+  freeCount: number | null;
   selected: boolean;
   onOpen: () => void;
   onShowOnMap: () => void;
   onToggleFavorite: () => void;
 }
 
-function Summary({ location: l }: { location: MapLocation }) {
+function Summary({ location: l, freeCount }: { location: MapLocation; freeCount: number | null }) {
   if (l.kind === 'charging') {
     const types = [...new Set(l.connectors.map((c) => CONNECTOR_LABELS[c.type]))];
     return (
@@ -30,6 +32,11 @@ function Summary({ location: l }: { location: MapLocation }) {
   }
   return (
     <div className="mt-1.5 flex flex-wrap gap-1">
+      {l.managed && freeCount !== null && (
+        <Badge tone={freeCount > 0 ? 'green' : 'red'}>
+          Вільно {freeCount} з {l.managed.spaces.length}
+        </Badge>
+      )}
       {l.fee !== 'unknown' && <Badge tone={l.fee === 'free' ? 'green' : 'blue'}>{FEE_LABELS[l.fee]}</Badge>}
       {l.capacity !== null && <Badge>{l.capacity} місць</Badge>}
       {l.capacityDisabled !== null && l.capacityDisabled > 0 && <Badge>♿ {l.capacityDisabled}</Badge>}
@@ -37,7 +44,7 @@ function Summary({ location: l }: { location: MapLocation }) {
   );
 }
 
-export function LocationCard({ location, distanceKm, favorite, selected, onOpen, onShowOnMap, onToggleFavorite }: Props) {
+export function LocationCard({ location, distanceKm, favorite, freeCount, selected, onOpen, onShowOnMap, onToggleFavorite }: Props) {
   const name = displayName(location);
   const subtitle =
     location.address ?? (location.kind === 'parking' && name.fromSource ? parkingTypeLabel(location) : location.operator) ?? null;
@@ -58,7 +65,7 @@ export function LocationCard({ location, distanceKm, favorite, selected, onOpen,
             )}
           </div>
           {subtitle && <p className="truncate text-sm text-slate-500 dark:text-slate-400">{subtitle}</p>}
-          <Summary location={location} />
+          <Summary location={location} freeCount={freeCount} />
         </button>
         <div className="flex shrink-0 flex-col gap-1">
           <button

@@ -16,6 +16,8 @@ interface Props {
   /** Змінюється, коли карту треба перемістити до вибраного маркера. */
   focusNonce: number;
   isFavorite: (id: string) => boolean;
+  /** Вільні місця на парковках з ручним керуванням: id → кількість. */
+  liveFree: Record<string, number>;
   onSelect: (id: string) => void;
 }
 
@@ -41,7 +43,7 @@ function clusterIcon(cluster: L.MarkerCluster): L.DivIcon {
  * Шар маркерів з кластеризацією (leaflet.markercluster).
  * Працює імперативно — це значно швидше за тисячі React-компонентів.
  */
-export function MarkerLayer({ locations, selectedId, focusNonce, isFavorite, onSelect }: Props) {
+export function MarkerLayer({ locations, selectedId, focusNonce, isFavorite, liveFree, onSelect }: Props) {
   const map = useMap();
   const groupRef = useRef<L.MarkerClusterGroup | null>(null);
   const markersRef = useRef(new Map<string, L.Marker>());
@@ -78,7 +80,7 @@ export function MarkerLayer({ locations, selectedId, focusNonce, isFavorite, onS
     for (const loc of locations) {
       const opts: KindMarkerOptions = {
         kind: loc.kind,
-        icon: getMarkerIcon(markerVariant(loc), loc.id === selectedId, isFavorite(loc.id)),
+        icon: getMarkerIcon(markerVariant(loc), loc.id === selectedId, isFavorite(loc.id), liveFree[loc.id] ?? null),
         keyboard: true,
         title: displayName(loc).text,
         alt: displayName(loc).text,
@@ -103,13 +105,13 @@ export function MarkerLayer({ locations, selectedId, focusNonce, isFavorite, onS
   useEffect(() => {
     for (const [id, m] of markersRef.current) {
       const loc = locById.current.get(id)!;
-      const icon = getMarkerIcon(markerVariant(loc), id === selectedId, isFavorite(id));
+      const icon = getMarkerIcon(markerVariant(loc), id === selectedId, isFavorite(id), liveFree[id] ?? null);
       if (m.options.icon !== icon) {
         m.setIcon(icon);
         m.setZIndexOffset(id === selectedId ? 1000 : 0);
       }
     }
-  }, [selectedId, isFavorite, locations]);
+  }, [selectedId, isFavorite, liveFree, locations]);
 
   // Переміщення карти до вибраного маркера (розкриваючи кластер)
   useEffect(() => {

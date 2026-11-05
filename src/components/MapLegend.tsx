@@ -1,6 +1,7 @@
 const ITEMS = [
   { color: '#2563eb', label: 'Парковка' },
   { color: '#16a34a', label: 'Зарядка' },
+  { color: '#7c3aed', label: 'Статус місць' },
 ];
 
 export function MapLegend() {

@@ -17,6 +17,8 @@ interface Props {
   selectedId: string | null;
   userPosition: LatLon | null;
   isFavorite: (id: string) => boolean;
+  /** Вільні місця на парковках з ручним керуванням. */
+  liveFree: Record<string, number>;
   onOpen: (l: MapLocation) => void;
   onShowOnMap: (l: MapLocation) => void;
   onToggleFavorite: (l: MapLocation) => void;
@@ -58,6 +60,7 @@ export function Sidebar(p: Props) {
       location={l}
       distanceKm={p.userPosition ? distanceKm(p.userPosition, l) : null}
       favorite={p.isFavorite(l.id)}
+      freeCount={p.liveFree[l.id] ?? null}
       selected={l.id === p.selectedId}
       onOpen={() => p.onOpen(l)}
       onShowOnMap={() => p.onShowOnMap(l)}

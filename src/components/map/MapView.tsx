@@ -12,6 +12,7 @@ interface Props {
   focusNonce: number;
   userPosition: UserPosition | null;
   isFavorite: (id: string) => boolean;
+  liveFree: Record<string, number>;
   onSelect: (id: string) => void;
   onBoundsChange: (bbox: BBox, zoom: number) => void;
   onMapReady: (map: LeafletMap) => void;
@@ -31,7 +32,7 @@ function BoundsWatcher({ onBoundsChange, onMapClick }: Pick<Props, 'onBoundsChan
 }
 
 export function MapView(props: Props) {
-  const { locations, selectedId, focusNonce, userPosition, isFavorite, onSelect, onBoundsChange, onMapReady, onMapClick } = props;
+  const { locations, selectedId, focusNonce, userPosition, isFavorite, liveFree, onSelect, onBoundsChange, onMapReady, onMapClick } = props;
   return (
     <MapContainer
       center={[LVIV_CENTER.lat, LVIV_CENTER.lon]}
@@ -56,6 +57,7 @@ export function MapView(props: Props) {
         selectedId={selectedId}
         focusNonce={focusNonce}
         isFavorite={isFavorite}
+        liveFree={liveFree}
         onSelect={onSelect}
       />
       {userPosition && (

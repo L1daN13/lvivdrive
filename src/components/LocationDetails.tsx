@@ -18,7 +18,8 @@ import {
   Timer,
   Users,
 } from 'lucide-react';
-import type { ChargingLocation, LatLon, MapLocation, ParkingLocation } from '../types/location';
+import type { ChargingLocation, LatLon, MapLocation, ParkingLocation, SpaceState } from '../types/location';
+import { SpaceGrid } from './SpaceGrid';
 import { reverseGeocode } from '../services/geocoding';
 import { googleMapsRouteUrl, osmRouteUrl } from '../services/routing';
 import { distanceKm, formatCoords, formatDistance } from '../utils/geo';
@@ -41,6 +42,9 @@ interface Props {
   onBack: () => void;
   onShowOnMap: () => void;
   onToggleFavorite: () => void;
+  /** Статуси керованих паркомісць цієї парковки. */
+  spaceStates?: Record<string, SpaceState>;
+  onToggleSpace: (spaceId: string) => void;
 }
 
 const UNKNOWN = <span className="text-slate-400 dark:text-slate-500">не вказано в джерелі</span>;
@@ -163,7 +167,16 @@ function ChargingFields({ c }: { c: ChargingLocation }) {
   );
 }
 
-export function LocationDetails({ location: l, userPosition, favorite, onBack, onShowOnMap, onToggleFavorite }: Props) {
+export function LocationDetails({
+  location: l,
+  userPosition,
+  favorite,
+  onBack,
+  onShowOnMap,
+  onToggleFavorite,
+  spaceStates,
+  onToggleSpace,
+}: Props) {
   const name = displayName(l);
   const dist = userPosition ? distanceKm(userPosition, l) : null;
   const access = accessLabel(l.access);
@@ -191,7 +204,10 @@ export function LocationDetails({ location: l, userPosition, favorite, onBack, o
         </div>
       </div>
 
-      {/* Статус у реальному часі — чесно повідомляємо, що його немає */}
+      {l.kind === 'parking' && l.managed ? (
+        <SpaceGrid lot={l.managed} states={spaceStates} onToggle={onToggleSpace} />
+      ) : (
+      /* Статус у реальному часі — чесно повідомляємо, що його немає */
       <div className="mt-4 flex gap-2.5 rounded-xl bg-amber-50 p-3 text-sm text-amber-900 ring-1 ring-amber-200/70 dark:bg-amber-500/10 dark:text-amber-200 dark:ring-amber-500/20">
         <CircleHelp className="mt-0.5 h-4 w-4 shrink-0" />
         <p>
@@ -206,6 +222,7 @@ export function LocationDetails({ location: l, userPosition, favorite, onBack, o
           )}
         </p>
       </div>
+      )}
 
       <div className="mt-4 grid grid-cols-2 gap-2">
         <a
