@@ -18,8 +18,7 @@ import {
   Timer,
   Users,
 } from 'lucide-react';
-import type { ChargingLocation, LatLon, MapLocation, ParkingLocation, SpaceState } from '../types/location';
-import { SpaceGrid } from './SpaceGrid';
+import type { ChargingLocation, LatLon, MapLocation, ParkingLocation } from '../types/location';
 import { reverseGeocode } from '../services/geocoding';
 import { googleMapsRouteUrl, osmRouteUrl } from '../services/routing';
 import { distanceKm, formatCoords, formatDistance } from '../utils/geo';
@@ -42,9 +41,8 @@ interface Props {
   onBack: () => void;
   onShowOnMap: () => void;
   onToggleFavorite: () => void;
-  /** Статуси керованих паркомісць цієї парковки. */
-  spaceStates?: Record<string, SpaceState>;
-  onToggleSpace: (spaceId: string) => void;
+  /** Схема паркомісць і бронювання (лише для парковок з ручним керуванням). */
+  spaceSlot?: ReactNode;
 }
 
 const UNKNOWN = <span className="text-slate-400 dark:text-slate-500">не вказано в джерелі</span>;
@@ -174,8 +172,7 @@ export function LocationDetails({
   onBack,
   onShowOnMap,
   onToggleFavorite,
-  spaceStates,
-  onToggleSpace,
+  spaceSlot,
 }: Props) {
   const name = displayName(l);
   const dist = userPosition ? distanceKm(userPosition, l) : null;
@@ -204,8 +201,8 @@ export function LocationDetails({
         </div>
       </div>
 
-      {l.kind === 'parking' && l.managed ? (
-        <SpaceGrid lot={l.managed} states={spaceStates} onToggle={onToggleSpace} />
+      {spaceSlot ? (
+        spaceSlot
       ) : (
       /* Статус у реальному часі — чесно повідомляємо, що його немає */
       <div className="mt-4 flex gap-2.5 rounded-xl bg-amber-50 p-3 text-sm text-amber-900 ring-1 ring-amber-200/70 dark:bg-amber-500/10 dark:text-amber-200 dark:ring-amber-500/20">
